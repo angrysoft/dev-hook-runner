@@ -1,0 +1,9 @@
+name: test
+description: This is a test hook
+env_file: .env
+execs:
+  - exec:
+      - echo "Running test hook"
+script: |
+  #!/bin/bash
+  echo "Running test hook script"
