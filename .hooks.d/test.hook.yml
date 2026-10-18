@@ -1,9 +1,11 @@
 name: test
 description: This is a test hook
-env_file: .env
+env_file: .env.yml
 execs:
-  - exec:
-      - echo "Running test hook"
+  - cmd: echo
+    args:
+      - "Running test hook"
 script: |
-  #!/bin/bash
-  echo "Running test hook script"
+  echo "Showing environment variable ${TEST_ENV}"
+  echo "Another environment variable ${ANOTHER_ENV}"
+  ls -l

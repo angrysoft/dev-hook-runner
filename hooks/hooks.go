@@ -3,13 +3,16 @@ package hooks
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"go.yaml.in/yaml/v4"
+	// "path/filepath"
 )
 
 type Cmd struct {
-	Exec []string `yaml:"exec"`
+	Cmd  string   `yaml:"cmd"`
+	Args []string `yaml:"args"`
 }
 
 type Hook struct {
@@ -18,6 +21,15 @@ type Hook struct {
 	EnvFile     string `yaml:"env_file"`
 	Execs       []Cmd  `yaml:"execs"`
 	Script      string `yaml:"script"`
+}
+
+type Env struct {
+	Vars []EnvItem `yaml:"vars"`
+}
+
+type EnvItem struct {
+	Key   string `yaml:"key"`
+	Value string `yaml:"value"`
 }
 
 func ListHooks(hooksDir string) {
@@ -55,4 +67,86 @@ func PrintHook(filePath string) {
 		return
 	}
 	fmt.Printf("%s : %s\n", hook.Name, hook.Description)
+}
+
+func RunHook(hooksDir, hookName string) error {
+
+	filePath := filepath.Join(hooksDir, hookName+".hook.yml")
+	hook, err := LoadHook(filePath)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Running hook:", hook.Name)
+	env, err := loadEnv(hook.EnvFile)
+	if err != nil {
+		return err
+	}
+
+	err = runExecs(hook.Execs, env)
+	if err != nil {
+		return err
+	}
+	err = runScript(hook.Script, env)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func runExecs(cmds []Cmd, env *Env) error {
+	for _, cmd := range cmds {
+		if len(cmd.Args) == 0 {
+			continue
+		}
+		c := exec.Command(cmd.Cmd, cmd.Args...)
+		c.Stdout = os.Stdout
+		c.Stderr = os.Stderr
+		if env != nil {
+			environment := os.Environ()
+			for _, item := range env.Vars {
+				environment = append(environment, fmt.Sprintf("%s=%s", item.Key, item.Value))
+			}
+			c.Env = environment
+		}
+		if err := c.Run(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func runScript(script string, env *Env) error {
+	if script == "" {
+		return nil
+	}
+	c := exec.Command("bash", "-c", script)
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	if env != nil {
+		environment := os.Environ()
+		for _, item := range env.Vars {
+			environment = append(environment, fmt.Sprintf("%s=%s", item.Key, item.Value))
+		}
+		c.Env = environment
+	}
+	if err := c.Run(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func loadEnv(envFile string) (*Env, error) {
+	if envFile == "" {
+		return nil, nil
+	}
+	data, err := os.ReadFile(envFile)
+	if err != nil {
+		return nil, err
+	}
+	var envs Env
+	err = yaml.Unmarshal(data, &envs)
+	if err != nil {
+		return nil, err
+	}
+	return &envs, nil
 }
