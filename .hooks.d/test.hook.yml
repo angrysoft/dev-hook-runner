@@ -1,6 +1,8 @@
 name: test
 description: This is a test hook
 env_file: .env.yml
+depends_on:
+  - hello
 execs:
   - cmd: echo
     args:

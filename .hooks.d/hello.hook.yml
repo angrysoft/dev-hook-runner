@@ -1,0 +1,9 @@
+name: hello
+description: This is a test hook
+env_file: .env.yml
+depends_on: []
+execs:
+  - cmd: echo
+    args:
+      - "Running hello hook"
+script:

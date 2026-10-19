@@ -16,9 +16,12 @@ func main() {
 	var dirFlag string
 	flag.StringVar(&dirFlag, "dir", ".", "Directory containing hooks")
 	flag.StringVar(&dirFlag, "d", ".", "Directory containing hooks (shorthand)")
-	
+
+	var hookArg string
+	flag.StringVar(&hookArg, "arg", "", "Argument to pass to the hook")
+	flag.StringVar(&hookArg, "a", "", "Argument to pass to the hook (shorthand)")
+
 	flag.Parse()
-	fmt.Println("Hooks directory:", dirFlag)
 	hooksDir := filepath.Join(dirFlag, ".hooks.d")
 
 	if listFlag {
@@ -39,11 +42,10 @@ func main() {
 			return
 		}
 
-		for _, hookName := range args {
-			err := hooks.RunHook(hooksDir, hookName)
-			if err != nil {
-				fmt.Println("Error running hook:", err)
-			}
+		hookName := args[0]
+		err = hooks.RunHook(hooksDir, hookName, hookArg)
+		if err != nil {
+			fmt.Println("Error running hook:", err)
 		}
 	}
 }

@@ -1,0 +1,8 @@
+name: withArgs
+description: This is a test hook with arguments
+needs_args: true
+depends_on:
+  - hello
+execs: []
+script: |
+  echo "Showing hook argument ${HOOK_ARG}"
