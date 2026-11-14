@@ -1,6 +1,5 @@
-name: withArgs
 description: This is a test hook with arguments
-needs_args: true
+needs_arg: true
 depends_on:
   - hello
 execs: []

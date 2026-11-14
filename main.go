@@ -31,23 +31,33 @@ func main() {
 
 	args := flag.Args()
 
-	if flag.NArg() > 0 {
-		if !isDestDirExist(hooksDir) {
-			fmt.Println("Hooks directory does not exist:", hooksDir)
-			return
-		}
-		err := os.Chdir(dirFlag)
-		if err != nil {
-			fmt.Println("Error changing directory:", err)
-			return
-		}
-
-		hookName := args[0]
-		err = hooks.RunHook(hooksDir, hookName, hookArg)
-		if err != nil {
-			fmt.Println("Error running hook:", err)
-		}
+	if flag.NArg() == 0 {
+		PringUsage()
+		return
 	}
+
+	if !isDestDirExist(hooksDir) {
+		fmt.Println("Hooks directory does not exist:", hooksDir)
+		return
+	}
+	err := os.Chdir(dirFlag)
+	if err != nil {
+		fmt.Println("Error changing directory:", err)
+		return
+	}
+
+	hookName := args[0]
+	err = hooks.RunHook(hooksDir, hookName, hookArg)
+	if err != nil {
+		fmt.Println("Error running hook:", err)
+	}
+
+}
+
+func PringUsage() {
+	fmt.Println("Usage: dhr [options] [hook_name]")
+	fmt.Println("Options:")
+	flag.PrintDefaults()
 }
 
 func isDestDirExist(dir string) bool {

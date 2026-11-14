@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"go.yaml.in/yaml/v4"
 	// "path/filepath"
@@ -22,7 +23,8 @@ type Hook struct {
 	DependsOn   []string `yaml:"depends_on"`
 	Execs       []Cmd    `yaml:"execs"`
 	Script      string   `yaml:"script"`
-	NeedsArgs   bool     `yaml:"needs_args"`
+	NeedsArg    bool     `yaml:"needs_arg"`
+	Confirm     bool     `yaml:"confirm"`
 }
 
 type Env struct {
@@ -65,12 +67,17 @@ func LoadHook(filePath string) (*Hook, error) {
 }
 
 func PrintHook(filePath string) {
+	callName, _, found := strings.Cut(filepath.Base(filePath), ".")
+	if !found {
+		fmt.Println("Invalid hook file name:", filePath)
+		return
+	}
 	hook, err := LoadHook(filePath)
 	if err != nil {
 		fmt.Println("Error loading hook:", err)
 		return
 	}
-	fmt.Printf("%s : %s\n", hook.Name, hook.Description)
+	fmt.Printf("%s : %s\n", callName, hook.Description)
 }
 
 func RunHook(hooksDir, hookName string, hookArg string) error {
@@ -80,10 +87,17 @@ func RunHook(hooksDir, hookName string, hookArg string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Running hook:", hook.Name)
-	if hook.NeedsArgs && hookArg == "" {
-		return fmt.Errorf("hook %s requires an argument", hook.Name)
+
+	fmt.Println("Running hook:", hookName)
+
+	if hook.NeedsArg && hookArg == "" {
+		return fmt.Errorf("hook %s requires an argument", hookName)
 	}
+
+	if hook.Confirm {
+		confirm()
+	}
+
 	firedHooks[hook.Name] = true
 	for _, dep := range hook.DependsOn {
 		if firedHooks[dep] {
@@ -101,7 +115,7 @@ func RunHook(hooksDir, hookName string, hookArg string) error {
 		return err
 	}
 
-	if hook.NeedsArgs {
+	if hook.NeedsArg {
 		env.Vars = append(env.Vars, EnvItem{
 			Key:   "HOOK_ARG",
 			Value: hookArg,
@@ -117,6 +131,16 @@ func RunHook(hooksDir, hookName string, hookArg string) error {
 		return err
 	}
 	return nil
+}
+
+func confirm() {
+	fmt.Print("Do you want continue y/N: ")
+	ans := "n"
+	fmt.Scanln(&ans)
+	if strings.ToLower(ans) != "y" {
+		fmt.Println("Aborted.")
+		os.Exit(1)
+	}
 }
 
 func runExecs(cmds []Cmd, env *Env) error {

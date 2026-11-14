@@ -1,0 +1,9 @@
+description: This confirms if the user wants to continue or not
+env_file: .env.yml
+confirm: true
+depends_on: []
+execs:
+  - cmd: echo
+    args:
+      - "Running hello hook"
+script:
