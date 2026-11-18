@@ -24,7 +24,7 @@ type Hook struct {
 	Execs       []Cmd    `yaml:"execs"`
 	Script      string   `yaml:"script"`
 	NeedsArg    bool     `yaml:"needs_arg"`
-	AllowedArgsValues []string `yaml:"allowed_args_values"`
+	AllowedArgValues []string `yaml:"allowed_arg_values"`
 	Confirm     bool     `yaml:"confirm"`
 }
 
@@ -96,7 +96,7 @@ func RunHook(hooksDir, hookName string, hookArg string) error {
 			return fmt.Errorf("hook %s requires an argument", hookName)
 		}
 
-		if len(hook.AllowedArgsValues) > 0 && !slices.Contains(hook.AllowedArgsValues, hookArg) {
+		if len(hook.AllowedArgValues) > 0 && !slices.Contains(hook.AllowedArgValues, hookArg) {
 				return fmt.Errorf("hook %s does not allow argument: %s", hookName, hookArg)
 		}
 	}

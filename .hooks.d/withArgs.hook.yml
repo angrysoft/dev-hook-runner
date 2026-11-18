@@ -1,6 +1,6 @@
 description: This is a test hook with arguments
 needs_arg: true
-allowed_args_values:
+allowed_arg_values:
   - "arg1"
   - "arg2"
 depends_on:
