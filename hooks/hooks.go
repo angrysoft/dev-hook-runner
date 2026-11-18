@@ -5,10 +5,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"go.yaml.in/yaml/v4"
-	// "path/filepath"
 )
 
 type Cmd struct {
@@ -24,6 +24,7 @@ type Hook struct {
 	Execs       []Cmd    `yaml:"execs"`
 	Script      string   `yaml:"script"`
 	NeedsArg    bool     `yaml:"needs_arg"`
+	AllowedArgsValues []string `yaml:"allowed_args_values"`
 	Confirm     bool     `yaml:"confirm"`
 }
 
@@ -90,8 +91,14 @@ func RunHook(hooksDir, hookName string, hookArg string) error {
 
 	fmt.Println("Running hook:", hookName)
 
-	if hook.NeedsArg && hookArg == "" {
-		return fmt.Errorf("hook %s requires an argument", hookName)
+	if hook.NeedsArg {
+		if hookArg == "" {
+			return fmt.Errorf("hook %s requires an argument", hookName)
+		}
+
+		if len(hook.AllowedArgsValues) > 0 && !slices.Contains(hook.AllowedArgsValues, hookArg) {
+				return fmt.Errorf("hook %s does not allow argument: %s", hookName, hookArg)
+		}
 	}
 
 	if hook.Confirm {
