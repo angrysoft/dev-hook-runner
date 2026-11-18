@@ -61,20 +61,24 @@ execs:
       - build
       - ./...
 script: echo "Build complete"
-needs_args: false
+needs_args: true
+allowed_arg_values:
+  - debug
+  - release
 ```
 
 All fields are optional:
 
-| Field | Description |
-| --- | --- |
-| `name` | Name displayed when the hook runs. |
-| `description` | Short description displayed when listing hooks. |
-| `depends_on` | Names of hooks to run before this hook. |
-| `env_file` | Path to a YAML file containing environment variables. |
-| `execs` | Commands to run in sequence. Each item contains `cmd` and an `args` list. |
-| `script` | A script executed using `bash -c`. |
-| `needs_args` | If `true`, the hook requires an argument passed with `--arg` or `-a`; the value is available as `HOOK_ARG`. |
+| Field                | Description                                                                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`               | Name displayed when the hook runs.                                                                                                          |
+| `description`        | Short description displayed when listing hooks.                                                                                             |
+| `depends_on`         | Names of hooks to run before this hook.                                                                                                     |
+| `env_file`           | Path to a YAML file containing environment variables.                                                                                       |
+| `execs`              | Commands to run in sequence. Each item contains `cmd` and an `args` list.                                                                   |
+| `script`             | A script executed using `bash -c`.                                                                                                          |
+| `needs_args`         | If `true`, the hook requires an argument passed with `--arg` or `-a`; the value is available as `HOOK_ARG`.                                 |
+| `allowed_arg_values` | Optional list of allowed values for `HOOK_ARG`. Used only when `needs_args` is `true`; if provided, `--arg` must match one of these values. |
 
 Commands in `execs` run in order, followed by the `script`. Commands and scripts inherit the process environment and receive variables from `env_file`.
 
@@ -94,7 +98,7 @@ Run a hook from the current directory:
 dhr build
 ```
 
-Pass an argument to a hook that requires one:
+Pass an argument to a hook that requires one (and matches `allowed_arg_values`, if configured):
 
 ```sh
 dhr --arg release build
@@ -113,10 +117,10 @@ dhr --list
 dhr --dir /path/to/project --list
 ```
 
-| Option | Shorthand | Description |
-| --- | --- | --- |
-| `--dir` | `-d` | Project directory containing `.hooks.d`; defaults to `.`. |
-| `--list` | `-l` | Lists hook names and descriptions. |
-| `--arg` | `-a` | Argument to pass to a hook. |
+| Option   | Shorthand | Description                                               |
+| -------- | --------- | --------------------------------------------------------- |
+| `--dir`  | `-d`      | Project directory containing `.hooks.d`; defaults to `.`. |
+| `--list` | `-l`      | Lists hook names and descriptions.                        |
+| `--arg`  | `-a`      | Argument to pass to a hook.                               |
 
 Dependencies run before the hook that declares them. Names in `depends_on` correspond to filenames without the `.hook.yml` suffix.

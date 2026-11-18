@@ -61,20 +61,24 @@ execs:
       - build
       - ./...
 script: echo "Budowanie zakończone"
-needs_args: false
+needs_args: true
+allowed_arg_values:
+  - debug
+  - release
 ```
 
 Wszystkie pola są opcjonalne:
 
-| Pole | Opis |
-| --- | --- |
-| `name` | Nazwa wyświetlana podczas uruchamiania hooka. |
-| `description` | Krótki opis, wyświetlany przy listowaniu hooków. |
-| `depends_on` | Lista nazw hooków do uruchomienia przed tym hookiem. |
-| `env_file` | Ścieżka do pliku YAML ze zmiennymi środowiskowymi. |
-| `execs` | Lista poleceń do uruchomienia. Każdy element zawiera `cmd` oraz listę argumentów `args`. |
-| `script` | Skrypt uruchamiany przez `bash -c`. |
-| `needs_args` | Gdy ma wartość `true`, hook wymaga argumentu przekazanego opcją `--arg` lub `-a`; wartość jest dostępna jako `HOOK_ARG`. |
+| Pole                 | Opis                                                                                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`               | Nazwa wyświetlana podczas uruchamiania hooka.                                                                                                                      |
+| `description`        | Krótki opis, wyświetlany przy listowaniu hooków.                                                                                                                   |
+| `depends_on`         | Lista nazw hooków do uruchomienia przed tym hookiem.                                                                                                               |
+| `env_file`           | Ścieżka do pliku YAML ze zmiennymi środowiskowymi.                                                                                                                 |
+| `execs`              | Lista poleceń do uruchomienia. Każdy element zawiera `cmd` oraz listę argumentów `args`.                                                                           |
+| `script`             | Skrypt uruchamiany przez `bash -c`.                                                                                                                                |
+| `needs_args`         | Gdy ma wartość `true`, hook wymaga argumentu przekazanego opcją `--arg` lub `-a`; wartość jest dostępna jako `HOOK_ARG`.                                           |
+| `allowed_arg_values` | Opcjonalna lista dozwolonych wartości `HOOK_ARG`. Używana tylko, gdy `needs_args` ma wartość `true`; jeśli jest ustawiona, `--arg` musi być jedną z tych wartości. |
 
 Polecenia z `execs` są wykonywane po kolei, a następnie uruchamiany jest `script`. Polecenia i skrypt dziedziczą środowisko procesu oraz otrzymują zmienne z `env_file`.
 
@@ -94,7 +98,7 @@ Uruchomienie hooka z bieżącego katalogu:
 dhr build
 ```
 
-Przekazanie argumentu do hooka wymagającego argumentów:
+Przekazanie argumentu do hooka wymagającego argumentów (zgodnego z `allowed_arg_values`, jeśli ustawiono):
 
 ```sh
 dhr --arg release build
@@ -113,10 +117,10 @@ dhr --list
 dhr --dir /ścieżka/do/projektu --list
 ```
 
-| Opcja | Skrót | Opis |
-| --- | --- | --- |
-| `--dir` | `-d` | Katalog projektu zawierający `.hooks.d`; domyślnie `.`. |
-| `--list` | `-l` | Wyświetla nazwy i opisy hooków. |
-| `--arg` | `-a` | Argument przekazywany do hooka. |
+| Opcja    | Skrót | Opis                                                    |
+| -------- | ----- | ------------------------------------------------------- |
+| `--dir`  | `-d`  | Katalog projektu zawierający `.hooks.d`; domyślnie `.`. |
+| `--list` | `-l`  | Wyświetla nazwy i opisy hooków.                         |
+| `--arg`  | `-a`  | Argument przekazywany do hooka.                         |
 
 Zależności są uruchamiane przed hookiem, który je deklaruje. Nazwy w `depends_on` odpowiadają nazwom plików bez przyrostka `.hook.yml`.
