@@ -24,8 +24,12 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 install:
-	@echo "==> Instalowanie $(BINARY_NAME) w $(shell go env GOPATH)/bin..."
-	go install .
+	install -D $(BUILD_DIR)/$(BINARY_NAME) $(DESTDIR)/usr/bin/$(BINARY_NAME)
+	install -D completion/$(BINARY_NAME).fish $(DESTDIR)/etc/fish/completions/$(BINARY_NAME).fish
+
+user-install:
+	install -D $(BUILD_DIR)/$(BINARY_NAME) $(HOME)/.local/bin/$(BINARY_NAME)
+	install -D completion/$(BINARY_NAME).fish $(HOME)/.config/fish/completions/$(BINARY_NAME).fish
 
 cross-build: clean
 	@echo "==> Kompilacja krzyżowa na różne platformy..."
